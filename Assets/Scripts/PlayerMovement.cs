@@ -6,12 +6,13 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float moveSpeed = 5f;
 
     private Vector2 movement;
-    private bool isJumping;
+    private bool isTouchingGround;
+
 
     void Start()
     {
+        isTouchingGround = true;
         movement = Vector2.zero;
-        isJumping = false;
     }
     
     void Update()
@@ -21,6 +22,7 @@ public class PlayerMovement : MonoBehaviour
         {
             rb.linearVelocity += movement * moveSpeed * Time.deltaTime;
         }
+        isGrounded();
 
     }
     
@@ -31,9 +33,38 @@ public class PlayerMovement : MonoBehaviour
     
     void OnJump(InputValue value)
     {
-        if (value.isPressed && !isJumping)
+        // have an isGrounded function
+        if (value.isPressed && isTouchingGround)
         {
-            isJumping = true;
+            isTouchingGround = false;
+            Vector2 currentVelocity = rb.linearVelocity;
+            currentVelocity = new Vector2(currentVelocity.x, currentVelocity.y + 5f);
+            rb.linearVelocity = currentVelocity;
         }
     }
+
+    private void isGrounded()
+    {
+        //raycast to ground and if the player is touching the ground then set isGrounded to true;
+        //this method will handle the value of isGrounded
+        
+        float distanceToGround = GetComponent<Collider2D>().bounds.size.y / 2;
+        
+        
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, distanceToGround + 0.05f, LayerMask.GetMask("Ground"));
+       
+        Debug.DrawRay(transform.position, Vector2.down * (distanceToGround + 0.05f), Color.red);
+
+        // the collided object should be from the map grid layer
+        if (hit.collider != null)
+        {
+            isTouchingGround = true;
+        }
+        else
+        {
+            isTouchingGround = false;
+        }
+        Debug.Log("isTouchingGround: " + isTouchingGround);
+    }
+    
 }
